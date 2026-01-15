@@ -3,18 +3,13 @@
   "description": "USB HID Keyboard Library for Rooted Android Devices",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "engines": {
     "node": ">=20.0.0"
   },
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    },
+    ".": "./dist/index.cjs",
     "./dist/*": "./dist/*"
   },
   "scripts": {
