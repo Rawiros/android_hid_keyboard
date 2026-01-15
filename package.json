@@ -12,8 +12,10 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./dist/*": "./dist/*"
   },
   "scripts": {
     "start": "cross-env TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/examples.js",
