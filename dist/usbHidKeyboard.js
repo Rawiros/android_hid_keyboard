@@ -1,11 +1,17 @@
-import { readdirSync, existsSync } from 'node:fs';
-import { writeFile, mkdir, symlink, open, rm, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
-import { HidModifier } from './types.js';
-import { setProp } from './utils/setProp.js';
-import isRooted from './utils/isRooted.js';
-import { KeyMap } from './utils/keyMap.js';
-import sleep from './utils/sleep.js';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UsbHidKeyboard = void 0;
+const node_fs_1 = require("node:fs");
+const promises_1 = require("node:fs/promises");
+const node_path_1 = require("node:path");
+const types_js_1 = require("./types.js");
+const setProp_js_1 = require("./utils/setProp.js");
+const isRooted_js_1 = __importDefault(require("./utils/isRooted.js"));
+const keyMap_js_1 = require("./utils/keyMap.js");
+const sleep_js_1 = __importDefault(require("./utils/sleep.js"));
 /**
  * HID Report Descriptor for a standard 6-key rollover keyboard
  */
@@ -25,7 +31,7 @@ const SHIFT_MODIFIER = 0x02;
  * This class provides a complete interface for creating and managing
  * a USB HID keyboard gadget on rooted Android devices.
  */
-export class UsbHidKeyboard {
+class UsbHidKeyboard {
     config;
     gadgetPath;
     g1Path;
@@ -33,11 +39,11 @@ export class UsbHidKeyboard {
     detectedUdc = null;
     constructor(config) {
         this.config = config;
-        this.g1Path = join(config.cfsPath, 'g1');
-        this.gadgetPath = join(config.cfsPath, config.gadgetName);
+        this.g1Path = (0, node_path_1.join)(config.cfsPath, 'g1');
+        this.gadgetPath = (0, node_path_1.join)(config.cfsPath, config.gadgetName);
     }
     ensureRooted() {
-        if (!isRooted()) {
+        if (!(0, isRooted_js_1.default)()) {
             throw new Error('Root access required. This library must run with elevated privileges on Android.');
         }
     }
@@ -47,7 +53,7 @@ export class UsbHidKeyboard {
         }
         try {
             const udcDir = '/sys/class/udc';
-            const entries = readdirSync(udcDir);
+            const entries = (0, node_fs_1.readdirSync)(udcDir);
             if (entries.length === 0) {
                 throw new Error('No UDC found in /sys/class/udc');
             }
@@ -66,16 +72,16 @@ export class UsbHidKeyboard {
     }
     async unbindGadget() {
         try {
-            await writeFile(join(this.gadgetPath, 'UDC'), '\n');
-            await sleep(100);
+            await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'UDC'), '\n');
+            await (0, sleep_js_1.default)(100);
         }
         catch {
         }
     }
     async bindGadget() {
         const udcName = this.getUdcName();
-        await writeFile(join(this.gadgetPath, 'UDC'), `${udcName}\n`);
-        await sleep(500);
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'UDC'), `${udcName}\n`);
+        await (0, sleep_js_1.default)(500);
     }
     async initialize() {
         this.ensureRooted();
@@ -83,49 +89,49 @@ export class UsbHidKeyboard {
             await this.unbindGadget();
         }
         try {
-            if (existsSync(join(this.gadgetPath, 'UDC'))) {
-                await writeFile(join(this.gadgetPath, 'UDC'), '\n');
-                await sleep(100);
+            if ((0, node_fs_1.existsSync)((0, node_path_1.join)(this.gadgetPath, 'UDC'))) {
+                await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'UDC'), '\n');
+                await (0, sleep_js_1.default)(100);
             }
         }
         catch {
         }
         try {
-            if (existsSync(this.gadgetPath)) {
-                const linkPath = join(this.gadgetPath, 'configs/c.1/hid.usb0');
-                if (existsSync(linkPath)) {
-                    await unlink(linkPath);
+            if ((0, node_fs_1.existsSync)(this.gadgetPath)) {
+                const linkPath = (0, node_path_1.join)(this.gadgetPath, 'configs/c.1/hid.usb0');
+                if ((0, node_fs_1.existsSync)(linkPath)) {
+                    await (0, promises_1.unlink)(linkPath);
                 }
-                await rm(this.gadgetPath, { recursive: true, force: true });
-                await sleep(100);
+                await (0, promises_1.rm)(this.gadgetPath, { recursive: true, force: true });
+                await (0, sleep_js_1.default)(100);
             }
         }
         catch (error) {
         }
-        await setProp('ctl.stop', 'adbd');
+        await (0, setProp_js_1.setProp)('ctl.stop', 'adbd');
         try {
-            await writeFile(join(this.g1Path, 'UDC'), '\n');
-            await sleep(100);
+            await (0, promises_1.writeFile)((0, node_path_1.join)(this.g1Path, 'UDC'), '\n');
+            await (0, sleep_js_1.default)(100);
         }
         catch {
         }
-        await mkdir(join(this.gadgetPath, 'strings/0x409'), { recursive: true });
-        await mkdir(join(this.gadgetPath, 'configs/c.1/strings/0x409'), { recursive: true });
-        await mkdir(join(this.gadgetPath, 'functions/hid.usb0'), { recursive: true });
-        await writeFile(join(this.gadgetPath, 'idVendor'), `${this.config.vendor.idVendor}\n`);
-        await writeFile(join(this.gadgetPath, 'idProduct'), `${this.config.vendor.idProduct}\n`);
-        await writeFile(join(this.gadgetPath, 'strings/0x409/serialnumber'), `${this.config.device.serialNumber}\n`);
-        await writeFile(join(this.gadgetPath, 'strings/0x409/manufacturer'), `${this.config.device.manufacturer}\n`);
-        await writeFile(join(this.gadgetPath, 'strings/0x409/product'), `${this.config.device.product}\n`);
-        const funcPath = join(this.gadgetPath, 'functions/hid.usb0');
-        await writeFile(join(funcPath, 'protocol'), '1\n');
-        await writeFile(join(funcPath, 'subclass'), '1\n');
-        await writeFile(join(funcPath, 'report_length'), '8\n');
-        await writeFile(join(funcPath, 'report_desc'), KEYBOARD_REPORT_DESCRIPTOR);
-        await writeFile(join(this.gadgetPath, 'configs/c.1/strings/0x409/configuration'), 'Config 1\n');
-        const linkPath = join(this.gadgetPath, 'configs/c.1/hid.usb0');
+        await (0, promises_1.mkdir)((0, node_path_1.join)(this.gadgetPath, 'strings/0x409'), { recursive: true });
+        await (0, promises_1.mkdir)((0, node_path_1.join)(this.gadgetPath, 'configs/c.1/strings/0x409'), { recursive: true });
+        await (0, promises_1.mkdir)((0, node_path_1.join)(this.gadgetPath, 'functions/hid.usb0'), { recursive: true });
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'idVendor'), `${this.config.vendor.idVendor}\n`);
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'idProduct'), `${this.config.vendor.idProduct}\n`);
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'strings/0x409/serialnumber'), `${this.config.device.serialNumber}\n`);
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'strings/0x409/manufacturer'), `${this.config.device.manufacturer}\n`);
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'strings/0x409/product'), `${this.config.device.product}\n`);
+        const funcPath = (0, node_path_1.join)(this.gadgetPath, 'functions/hid.usb0');
+        await (0, promises_1.writeFile)((0, node_path_1.join)(funcPath, 'protocol'), '1\n');
+        await (0, promises_1.writeFile)((0, node_path_1.join)(funcPath, 'subclass'), '1\n');
+        await (0, promises_1.writeFile)((0, node_path_1.join)(funcPath, 'report_length'), '8\n');
+        await (0, promises_1.writeFile)((0, node_path_1.join)(funcPath, 'report_desc'), KEYBOARD_REPORT_DESCRIPTOR);
+        await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'configs/c.1/strings/0x409/configuration'), 'Config 1\n');
+        const linkPath = (0, node_path_1.join)(this.gadgetPath, 'configs/c.1/hid.usb0');
         try {
-            await symlink(funcPath, linkPath);
+            await (0, promises_1.symlink)(funcPath, linkPath);
         }
         catch {
         }
@@ -140,7 +146,7 @@ export class UsbHidKeyboard {
         press[0] = modifier;
         press[2] = keyCode;
         const release = Buffer.alloc(8);
-        const handle = await open(this.config.hidDevicePath, 'w');
+        const handle = await (0, promises_1.open)(this.config.hidDevicePath, 'w');
         try {
             await handle.write(press, 0, 8);
             await handle.write(release, 0, 8);
@@ -155,22 +161,22 @@ export class UsbHidKeyboard {
         }
         for (let i = 0; i < text.length; i++) {
             const char = text[i];
-            const mapping = KeyMap.get(char);
+            const mapping = keyMap_js_1.KeyMap.get(char);
             if (!mapping) {
                 continue;
             }
-            const modifier = mapping.needsShift ? SHIFT_MODIFIER : HidModifier.None;
+            const modifier = mapping.needsShift ? SHIFT_MODIFIER : types_js_1.HidModifier.None;
             await this.sendKey(modifier, mapping.usageId);
         }
     }
     async sendEnter() {
-        await this.sendKey(HidModifier.None, 0x28); // ENTER key
+        await this.sendKey(types_js_1.HidModifier.None, 0x28); // ENTER key
     }
     async setProduct(name) {
         this.config.device.product = name;
         if (this.isInitialized) {
             await this.unbindGadget();
-            await writeFile(join(this.gadgetPath, 'strings/0x409/product'), `${name}\n`);
+            await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'strings/0x409/product'), `${name}\n`);
             await this.bindGadget();
         }
     }
@@ -178,7 +184,7 @@ export class UsbHidKeyboard {
         this.config.device.manufacturer = name;
         if (this.isInitialized) {
             await this.unbindGadget();
-            await writeFile(join(this.gadgetPath, 'strings/0x409/manufacturer'), `${name}\n`);
+            await (0, promises_1.writeFile)((0, node_path_1.join)(this.gadgetPath, 'strings/0x409/manufacturer'), `${name}\n`);
             await this.bindGadget();
         }
     }
@@ -195,23 +201,23 @@ export class UsbHidKeyboard {
         const udcName = this.getUdcName();
         try {
             await this.unbindGadget();
-            const linkPath = join(this.gadgetPath, 'configs/c.1/hid.usb0');
+            const linkPath = (0, node_path_1.join)(this.gadgetPath, 'configs/c.1/hid.usb0');
             try {
-                await unlink(linkPath);
+                await (0, promises_1.unlink)(linkPath);
             }
             catch {
             }
             try {
-                await rm(this.gadgetPath, { recursive: true, force: true });
+                await (0, promises_1.rm)(this.gadgetPath, { recursive: true, force: true });
             }
             catch (error) {
             }
             try {
-                await writeFile(join(this.g1Path, 'UDC'), `${udcName}\n`);
+                await (0, promises_1.writeFile)((0, node_path_1.join)(this.g1Path, 'UDC'), `${udcName}\n`);
             }
             catch {
             }
-            await setProp('ctl.start', 'adbd');
+            await (0, setProp_js_1.setProp)('ctl.start', 'adbd');
         }
         catch (error) {
         }
@@ -220,3 +226,4 @@ export class UsbHidKeyboard {
         }
     }
 }
+exports.UsbHidKeyboard = UsbHidKeyboard;

@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HidKeyCode = exports.HidModifier = void 0;
 /**
  * Standard HID Modifiers bitmask
  */
-export var HidModifier;
+var HidModifier;
 (function (HidModifier) {
     HidModifier[HidModifier["None"] = 0] = "None";
     HidModifier[HidModifier["LeftCtrl"] = 1] = "LeftCtrl";
@@ -12,11 +15,11 @@ export var HidModifier;
     HidModifier[HidModifier["RightShift"] = 32] = "RightShift";
     HidModifier[HidModifier["RightAlt"] = 64] = "RightAlt";
     HidModifier[HidModifier["RightGui"] = 128] = "RightGui";
-})(HidModifier || (HidModifier = {}));
+})(HidModifier || (exports.HidModifier = HidModifier = {}));
 /**
  * Common HID Keycodes (Usage IDs)
  */
-export var HidKeyCode;
+var HidKeyCode;
 (function (HidKeyCode) {
     HidKeyCode[HidKeyCode["A"] = 4] = "A";
     HidKeyCode[HidKeyCode["D"] = 7] = "D";
@@ -29,4 +32,4 @@ export var HidKeyCode;
     HidKeyCode[HidKeyCode["Key1"] = 30] = "Key1";
     HidKeyCode[HidKeyCode["Key2"] = 31] = "Key2";
     HidKeyCode[HidKeyCode["Key3"] = 32] = "Key3";
-})(HidKeyCode || (HidKeyCode = {}));
+})(HidKeyCode || (exports.HidKeyCode = HidKeyCode = {}));

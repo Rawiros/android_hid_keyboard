@@ -1,1 +1,3 @@
-export default (ms) => new Promise(resolve => setTimeout(resolve, ms));
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = (ms) => new Promise(resolve => setTimeout(resolve, ms));
