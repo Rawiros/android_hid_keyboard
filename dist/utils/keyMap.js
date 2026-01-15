@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SpecialKeys = exports.KeyMap = void 0;
 /**
  * Complete HID Usage ID to character mapping
  */
-export const KeyMap = new Map([
+exports.KeyMap = new Map([
     // Lowercase letters (a-z: 0x04-0x1d)
     ['a', { usageId: 0x04, needsShift: false }],
     ['b', { usageId: 0x05, needsShift: false }],
@@ -110,7 +113,7 @@ export const KeyMap = new Map([
 /**
  * Special control keys
  */
-export const SpecialKeys = {
+exports.SpecialKeys = {
     BACKSPACE: 0x2a,
     TAB: 0x2b,
     ENTER: 0x28,
